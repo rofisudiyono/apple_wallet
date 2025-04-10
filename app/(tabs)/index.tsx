@@ -20,42 +20,44 @@ const blobToDataUrl = async (blob: any) =>
 export default function Index() {
   const [name, setName] = useState<string | undefined>(undefined);
   const [isLoadingPass, setIsLoadingPass] = useState(false);
-  const handleChangeText = (value: any) => {
-    setName(value);
-  };
+  const [error, setError] = useState<string | undefined>(undefined);
+  // const base_url = "https://inherently-fancy-goblin.ngrok-free.app";
+  const base_url = "https://apple-pass.staging.jomcharge.com";
+  // const base_url = "http://127.0.0.1:3000/";
+
   const handleSubmit = async () => {
     // Skip if the name is not set
     if (!Boolean(name)) return;
     try {
       setIsLoadingPass(true);
-      const pass = await fetch(
-        "https://inherently-fancy-goblin.ngrok-free.app",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name,
-          }),
-        }
-      );
+      const pass = await fetch(base_url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+        }),
+      });
+      console.log(JSON.stringify(pass));
       const passBlob = await pass.blob();
-      const responseAdd = await WalletManager.addPassFromUrl(
-        await blobToDataUrl(passBlob)
-      );
-      console.log(">", responseAdd);
+      await WalletManager.addPassFromUrl(await blobToDataUrl(passBlob));
+      await WalletManager.viewInWallet("pass.com.evc.app");
 
       setIsLoadingPass(false);
     } catch (e) {
+      setError(JSON.stringify(e));
       console.log(e);
     }
   };
 
   const getData = async () => {
-    const pass = await fetch("https://inherently-fancy-goblin.ngrok-free.app", {
+    const pass = await fetch(base_url, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
-    console.log(JSON.stringify(pass));
+  };
+
+  const showPass = async () => {
+    await WalletManager.viewInWallet("pass.com.evc.app");
   };
 
   useEffect(() => {
@@ -65,20 +67,13 @@ export default function Index() {
   return (
     <View style={styles.container}>
       <View style={styles.labelContainer}>
-        <Text style={styles.label}>Enter your name below please</Text>
+        <Text style={styles.label}>{base_url}</Text>
+        <Text style={styles.label}>{JSON.stringify(error)}</Text>
         {isLoadingPass && <ActivityIndicator />}
       </View>
-      <TextInput
-        editable={!isLoadingPass}
-        value={name}
-        onChangeText={handleChangeText}
-        style={styles.input}
-      />
-      <Button
-        disabled={isLoadingPass}
-        title="Get your pass now!"
-        onPress={handleSubmit}
-      />
+      <TextInput value={name} onChangeText={setName} style={styles.input} />
+      <Button title="Get your pass now!" onPress={handleSubmit} />
+      <Button disabled={isLoadingPass} title="Show pass" onPress={showPass} />
       <StatusBar style="auto" />
     </View>
   );
@@ -99,13 +94,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   label: {
-    fontSize: 16,
+    fontSize: 8,
   },
-  labelContainer: {
-    alignSelf: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "60%",
-    height: 18,
-  },
+  labelContainer: {},
 });
