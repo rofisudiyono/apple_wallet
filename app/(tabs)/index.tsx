@@ -73,7 +73,8 @@ export default function Index() {
       </View>
       <TextInput value={name} onChangeText={setName} style={styles.input} />
       <Button title="Get your pass now!" onPress={handleSubmit} />
-      <Button disabled={isLoadingPass} title="Show pass" onPress={showPass} />
+      <Button disabled={isLoadingPass} title="Apple pass" onPress={showPass} />
+      <Button disabled={isLoadingPass} title="Google pass" onPress={showPass} />
       <StatusBar style="auto" />
     </View>
   );
@@ -85,6 +86,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
+    gap: 10,
   },
   input: {
     height: 40,
